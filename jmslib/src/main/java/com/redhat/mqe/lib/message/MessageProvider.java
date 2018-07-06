@@ -111,6 +111,9 @@ public class MessageProvider implements AutoCloseable {
                 case "bool":
                     provider = new ObjectMessageProvider(senderOptions, session);
                     break;
+                case "stream":
+                    provider = new StreamMessageProvider(senderOptions, session);
+                    break;
                 default:
                     throw new InvalidParameterException("Message content type of " + contentType + " is not supported.");
             }

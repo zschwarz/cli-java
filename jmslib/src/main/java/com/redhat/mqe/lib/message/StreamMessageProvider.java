@@ -49,6 +49,13 @@ public class StreamMessageProvider extends MessageProvider {
         // Create "ListMessage" using StreamMessage
         StreamMessage message = session.createStreamMessage();
 
+        if (senderOptions.getOption(ClientOptions.MSG_CONTENT_FROM_FILE).hasParsedValue()) {
+            byte[] data = readBinaryContentFromFile(
+                senderOptions.getOption(ClientOptions.MSG_CONTENT_FROM_FILE).getValue());
+            message.writeBytes(data);
+            return message;
+        }
+
         List<String> values = senderOptions.getOption(ClientOptions.MSG_CONTENT_LIST_ITEM).getParsedValuesList();
         if (isEmptyMessage(values)) {
             return message;
