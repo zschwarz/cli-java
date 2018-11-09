@@ -57,6 +57,7 @@ abstract class Client {
     OptionSpec<String> password;
     OptionSpec<Integer> keepAlive;
     OptionSpec<Boolean> reconnect;
+    OptionSpec<Integer> duration;
 
     String cliDestination;
     String cliClientId;
@@ -75,6 +76,7 @@ abstract class Client {
     String cliPassword;
     Integer cliKeepAlive;
     Boolean cliReconnect;
+    int cliDuration;
 
     AmcMessageFormatter messageFormatter = new AmcMessageFormatter();
 
@@ -137,6 +139,8 @@ abstract class Client {
 
         reconnect = parser.accepts("conn-reconnect", "automatic reconnect (true, false)").withRequiredArg().ofType(Boolean.class).defaultsTo(true);
 
+        duration = parser.accepts("duration", "duration").withRequiredArg().ofType(Integer.class).defaultsTo(0);
+
         help = parser.accepts("help", "This help").forHelp();
 
         return parser;
@@ -166,6 +170,7 @@ abstract class Client {
             cliPassword = optionSet.valueOf(password);
             cliKeepAlive = optionSet.valueOf(keepAlive);
             cliReconnect = optionSet.valueOf(reconnect);
+            cliDuration = optionSet.valueOf(duration) * 1000;
         }
     }
 
