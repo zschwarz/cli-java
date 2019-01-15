@@ -22,28 +22,37 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.redhat.cli-java</groupId>
+    <parent>
+        <artifactId>cli-java</artifactId>
+        <groupId>com.redhat.cli-java</groupId>
+        <version>1.2.2-SNAPSHOT</version>
+    </parent>
+
     <artifactId>bom</artifactId>
     <version>1.2.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
         <slfj.version>1.7.25</slfj.version>
-        <jopt.version>4.9</jopt.version>
-        <dagger.version>2.15</dagger.version>
+        <jopt.version>5.0.4</jopt.version>
+        <dagger.version>2.17</dagger.version>
+        <jackson.version>2.9.8</jackson.version>
 
-        <kotlin.version>1.2.21</kotlin.version>
-        <junit.jupiter.version>5.1.1</junit.jupiter.version>
-        <junit.platform.version>1.1.1</junit.platform.version>
-        <truth.version>0.40</truth.version>
+        <kotlin.version>1.2.61</kotlin.version>
+        <junit.jupiter.version>5.3.1</junit.jupiter.version>
+        <junit.pioneer.version>0.2.2</junit.pioneer.version>
+        <truth.version>0.42</truth.version>
+        <mockito.version>2.23.0</mockito.version>
 
-        <plugin.compiler.version>3.7.0</plugin.compiler.version>
+        <artemis.broker.version>2.6.3</artemis.broker.version>
+
+        <plugin.compiler.version>3.8.0</plugin.compiler.version>
         <plugin.assembly.version>3.1.0</plugin.assembly.version>
-        <plugin.enforcer.version>3.0.0-M1</plugin.enforcer.version>
-        <plugin.jar.version>3.0.2</plugin.jar.version>
-        <plugin.jacoco.version>0.8.0</plugin.jacoco.version>
-        <plugin.bundle.version>3.5.0</plugin.bundle.version>
-        <plugin.surefire.version>2.19.1</plugin.surefire.version>
+        <plugin.enforcer.version>3.0.0-M2</plugin.enforcer.version>
+        <plugin.jar.version>3.1.0</plugin.jar.version>
+        <plugin.jacoco.version>0.8.2</plugin.jacoco.version>
+        <plugin.shade.version>3.2.1</plugin.shade.version>
+        <plugin.surefire.version>3.0.0-M1</plugin.surefire.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -56,6 +65,11 @@
                 <groupId>net.sf.jopt-simple</groupId>
                 <artifactId>jopt-simple</artifactId>
                 <version>${jopt.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
             </dependency>
 
             <!--JMS dependencies-->
@@ -138,9 +152,34 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
+                <groupId>org.junit-pioneer</groupId>
+                <artifactId>junit-pioneer</artifactId>
+                <version>${junit.pioneer.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.google.truth</groupId>
                 <artifactId>truth</artifactId>
                 <version>${truth.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-amqp-protocol</artifactId>
+                <version>${artemis.broker.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.activemq</groupId>
+                <artifactId>artemis-server</artifactId>
+                <version>${artemis.broker.version}</version>
                 <scope>test</scope>
             </dependency>
 

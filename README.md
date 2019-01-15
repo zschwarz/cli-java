@@ -11,12 +11,20 @@ cli-java is a collection of commandline messaging clients suitable for interacti
 ## Getting started
 When using IntelliJ IDEA Ultimate Edition, select "Open" (not "Import Project") option to open project and delete OSGi facets in File >> Project Structure >> Project Settings >> Facets.
 
-    mvn package -DskipTests=true  # compile without executing tests (tests require broker)
+When using IntelliJ IDEA Ultimate Edition, select "Open" (not "Import Project") option to open project and delete OSGi facets in File >> Project Structure >> Project Settings >> Facets.
+
+    mvn clean package  # compile without executing external tests (tests that require broker)
     java -jar cli-qpid-jms/target/cli-qpid-jms-*.jar sender -b amqp://127.0.0.1:5672 -a myQ --log-msgs dict
 
 ### Run tests
 
-    mvn test -Pcoverage,tests
+    mvn test -Ptests
+    
+    mvn test -Pcoverage,tests  # collect coverage using JaCoCo
+    
+    mvn clean test -Dmaven.test.failure.ignore
+    find -wholename "*/surefire-reports/TEST-*.xml" | zip -j@ test_results.zip
+    
 
 ### Update versions
 

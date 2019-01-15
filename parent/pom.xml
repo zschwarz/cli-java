@@ -34,11 +34,11 @@
     <packaging>pom</packaging>
 
     <properties>
+        <excludeTests>external</excludeTests>
         <bundle.symbolic.name.suffix>ChildPomResponsibility</bundle.symbolic.name.suffix>
         <jar.main.class>ChildPomResponsibility</jar.main.class>
         <library.version>ChildPomResponsibility</library.version>
         <jar.finalName>${project.artifactId}-${project.version}</jar.finalName>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -89,13 +89,6 @@
             <artifactId>junit-jupiter-params</artifactId>
         </dependency>
 
-        <!-- Only required to run tests in an IntelliJ IDEA that bundles an older version -->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>${junit.platform.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -131,40 +124,22 @@
             <artifactId>javax.annotation-api</artifactId>
             <version>1.3.2</version>
         </dependency>
+
+        <!--for Mockito, mock-maker-inline-->
+        <dependency>
+            <groupId>com.github.olivergondza</groupId>
+            <artifactId>maven-jdk-tools-wrapper</artifactId>
+            <version>0.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <profiles>
         <profile>
-            <!--build Kotlin tests only when explicitly requested-->
             <id>tests</id>
-            <activation>
-                <property>
-                    <name>tests</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>kotlin-maven-plugin</artifactId>
-                        <groupId>org.jetbrains.kotlin</groupId>
-                        <version>${kotlin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>test-compile</id>
-                                <goals>
-                                    <goal>test-compile</goal>
-                                </goals>
-                                <configuration>
-                                    <sourceDirs>
-                                        <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
-                                        <sourceDir>${project.basedir}/src/test/java</sourceDir>
-                                    </sourceDirs>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <excludeTests/>
+            </properties>
         </profile>
         <profile>
             <id>coverage</id>
@@ -196,81 +171,88 @@
     </profiles>
 
     <build>
-        <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-shade-plugin</artifactId>
+                    <version>${plugin.shade.version}</version>
+                    <executions>
+                        <execution>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>shade</goal>
+                            </goals>
+                            <configuration>
+                                <finalName>${jar.finalName}-${library.version}</finalName>
+                                <transformers>
+                                    <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                        <manifestEntries>
+                                            <Main-Class>${jar.main.class}</Main-Class>
+                                        </manifestEntries>
+                                    </transformer>
+                                </transformers>
+                                <filters>
+                                    <filter>
+                                        <!--https://stackoverflow.com/questions/999489/invalid-signature-file-when-attempting-to-run-a-jar-->
+                                        <artifact>*:*</artifact>
+                                        <excludes>
+                                            <exclude>META-INF/*.SF</exclude>
+                                            <exclude>META-INF/*.DSA</exclude>
+                                            <exclude>META-INF/*.RSA</exclude>
+                                        </excludes>
+                                    </filter>
+                                </filters>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
         <plugins>
+            <!--https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#Filtering_by_Tags-->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${plugin.surefire.version}</version>
                 <configuration>
                     <forkCount>1</forkCount>
+                    <excludedGroups>${excludeTests}</excludedGroups>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>${junit.platform.version}</version>
-                    </dependency>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit.jupiter.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${plugin.compiler.version}</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <compilerArgument>-Xlint:all</compilerArgument>
                     <showWarnings>true</showWarnings>
                     <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
             <plugin>
-                <!--Don't create default jar without dependencies -->
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>${plugin.jar.version}</version>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <version>${kotlin.version}</version>
                 <executions>
                     <execution>
-                        <id>default-jar</id>
-                        <phase>none</phase>
+                        <id>test-compile</id>
+                        <goals>
+                            <goal>test-compile</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
+                                <sourceDir>${project.basedir}/src/test/java</sourceDir>
+                                <sourceDir>${project.build.directory}/generated-sources/annotations</sourceDir>
+                            </sourceDirs>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>${jar.main.class}</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <!--https://issues.apache.org/jira/browse/FELIX-5698-->
-                <dependencies>
-                    <dependency>
-                        <groupId>biz.aQute.bnd</groupId>
-                        <artifactId>biz.aQute.bndlib</artifactId>
-                        <version>3.5.0</version>
-                    </dependency>
-                </dependencies>
-                <configuration>
-                    <instructions>
-                        <Bundle-SymbolicName>com.redhat.mqe.${bundle.symbolic.name.suffix}</Bundle-SymbolicName>
-                        <Export-Package>com.redhat.mqe.${bundle.symbolic.name.suffix}</Export-Package>
-                        <Import-Package></Import-Package>
-                        <DynamicImport-Package>*</DynamicImport-Package>
-                        <Embed-Dependency>*;scope=compile|runtime;inline=true</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
-                        <Require-Capability>osgi.ee</Require-Capability>
-                    </instructions>
-                    <finalName>${jar.finalName}-${library.version}</finalName>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
