@@ -28,7 +28,7 @@ public class Receiver extends Client implements MqttCallback {
 
     private MqttClient receiver = null;
     private long endTime;
-    private int mCount = 0;
+    private int msgArrivedCount = 0;
 
     public Receiver(String[] args) {
         super(args);
@@ -60,7 +60,7 @@ public class Receiver extends Client implements MqttCallback {
             log.info("Subscribed to " + cliDestination);
             // wait for messages to arrive for some time
             endTime = System.currentTimeMillis() + cliTimeout;
-            while (System.currentTimeMillis() < endTime & mCount < cliMsgCount) {
+            while (System.currentTimeMillis() < endTime & msgArrivedCount < cliMsgCount) {
                 Thread.sleep(200);
             }
             receiver.unsubscribe(cliDestination);
@@ -69,9 +69,6 @@ public class Receiver extends Client implements MqttCallback {
             throw e;
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.exit(1);
         } finally {
             closeClient();
         }
@@ -80,12 +77,19 @@ public class Receiver extends Client implements MqttCallback {
     public void connectionLost(Throwable cause) {
         log.warn("Connection lost! " + cause.getMessage());
         cause.printStackTrace();
+        try {
+            receiver.unsubscribe(cliDestination);
+            closeClient();
+        } catch (MqttException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     public void messageArrived(String topic, MqttMessage message) {
         printMessage(topic, message);
         endTime = System.currentTimeMillis() + cliTimeout;
-        mCount += 1;
+        msgArrivedCount += 1;
 
     }
 
