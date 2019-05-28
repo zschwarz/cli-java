@@ -23,11 +23,12 @@ import joptsimple.OptionParser;
 import org.apache.log4j.Logger;
 import org.eclipse.paho.client.mqttv3.*;
 
-
 public class Receiver extends Client implements MqttCallback {
     private Logger log = setUpLogger("Receiver");
 
     private MqttClient receiver = null;
+    private long endTime;
+    private int mCount = 0;
 
     public Receiver(String[] args) {
         super(args);
@@ -58,8 +59,8 @@ public class Receiver extends Client implements MqttCallback {
             receiver.subscribe(cliDestination);
             log.info("Subscribed to " + cliDestination);
             // wait for messages to arrive for some time
-            long endTime = System.currentTimeMillis() + cliTimeout;
-            while (System.currentTimeMillis() < endTime) {
+            endTime = System.currentTimeMillis() + cliTimeout;
+            while (System.currentTimeMillis() < endTime & mCount < cliMsgCount) {
                 Thread.sleep(200);
             }
             receiver.unsubscribe(cliDestination);
@@ -83,6 +84,9 @@ public class Receiver extends Client implements MqttCallback {
 
     public void messageArrived(String topic, MqttMessage message) {
         printMessage(topic, message);
+        endTime = System.currentTimeMillis() + cliTimeout;
+        mCount += 1;
+
     }
 
     public void deliveryComplete(IMqttDeliveryToken token) {
