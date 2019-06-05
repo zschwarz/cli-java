@@ -57,6 +57,7 @@ abstract class Client {
     OptionSpec<String> password;
     OptionSpec<Integer> keepAlive;
     OptionSpec<Boolean> reconnect;
+    OptionSpec<String> logLevel;
 
     String cliDestination;
     String cliClientId;
@@ -75,6 +76,7 @@ abstract class Client {
     String cliPassword;
     Integer cliKeepAlive;
     Boolean cliReconnect;
+    String cliLogLevel;
 
     AmcMessageFormatter messageFormatter = new AmcMessageFormatter();
 
@@ -137,6 +139,8 @@ abstract class Client {
 
         reconnect = parser.accepts("conn-reconnect", "automatic reconnect (true, false)").withRequiredArg().ofType(Boolean.class).defaultsTo(true);
 
+        logLevel = parser.accepts("log-level", "logging level of client trace/debug/info/warn/error/fatal").withRequiredArg().ofType(String.class).defaultsTo("info");
+
         help = parser.accepts("help", "This help").forHelp();
 
         return parser;
@@ -166,6 +170,7 @@ abstract class Client {
             cliPassword = optionSet.valueOf(password);
             cliKeepAlive = optionSet.valueOf(keepAlive);
             cliReconnect = optionSet.valueOf(reconnect);
+            cliLogLevel = optionSet.valueOf(logLevel);
         }
     }
 
@@ -239,7 +244,32 @@ abstract class Client {
 
     protected Logger setUpLogger(String name) {
         Logger log = Logger.getLogger(name);
-        log.setLevel(Level.WARN);
+        if (cliLogLevel == null){
+            cliLogLevel = "info";
+        }
+        switch (cliLogLevel.toLowerCase()) {
+        case "all":
+            log.setLevel(Level.ALL);
+            break;
+        case "trace":
+            log.setLevel(Level.TRACE);
+            break;
+        case "debug":
+            log.setLevel(Level.DEBUG);
+            break;
+        case "warn":
+            log.setLevel(Level.WARN);
+            break;
+        case "error":
+            log.setLevel(Level.ERROR);
+            break;
+        case "fatal":
+            log.setLevel(Level.FATAL);
+            break;
+        case "info":
+        default:
+            log.setLevel(Level.INFO);
+        }
         return log;
     }
 
