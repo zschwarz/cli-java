@@ -39,6 +39,7 @@ public class Main {
                 }
             }
         }
+        // shutdown hook for closing client by ctrl+c
         if (client != null) {
             final Client finalClient = client;
             Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -58,7 +59,7 @@ public class Main {
     }
 
     private static void printHelpAndExit() {
-        System.out.println("first argument must be sender, receiver OR connector");
+        System.out.println("First argument must be sender, receiver OR connector.");
         System.exit(1);
     }
 }

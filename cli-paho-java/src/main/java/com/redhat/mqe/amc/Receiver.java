@@ -47,6 +47,7 @@ public class Receiver extends Client implements MqttCallback {
 
     @Override
     public void startClient() throws MqttException {
+        // convert to milliseconds
         cliTimeout = cliTimeout * 1000;
         try {
             receiver = new MqttClient(cliBroker, cliClientId, null);
@@ -58,7 +59,8 @@ public class Receiver extends Client implements MqttCallback {
             receiver.setCallback(this);
             receiver.subscribe(cliDestination);
             log.info("Subscribed to " + cliDestination);
-            // wait for messages to arrive for some time
+
+            // wait for messages to arrive for given amount of time (timeout)
             endTime = System.currentTimeMillis() + cliTimeout;
             while (System.currentTimeMillis() < endTime & msgArrivedCount < cliMsgCount) {
                 Thread.sleep(200);
@@ -80,17 +82,21 @@ public class Receiver extends Client implements MqttCallback {
         try {
             receiver.unsubscribe(cliDestination);
             closeClient();
+            // catch error when connection to broker is lost
         } catch (MqttException e) {
             e.printStackTrace();
             System.exit(1);
         }
     }
 
+    /**
+     * Prints arrived message, refreshes receiver timeout
+     *  and increases number of arrived messages.
+     *  */
     public void messageArrived(String topic, MqttMessage message) {
         printMessage(topic, message);
         endTime = System.currentTimeMillis() + cliTimeout;
         msgArrivedCount += 1;
-
     }
 
     public void deliveryComplete(IMqttDeliveryToken token) {

@@ -203,7 +203,13 @@ abstract class Client {
         }
     }
 
+    /**
+     * Set username, password, keep-alive interval, reconnect, clean session
+     * and will (destination, message, QoS, retained) options.
+     * */
     protected MqttConnectOptions setConnectionOptions(MqttConnectOptions connectOptions) {
+
+        // set will destination, message, Qos, retained
         if (cliWillFlag) {
             try {
                 connectOptions.setWill(cliWillDestination, cliWillMessage.getBytes(), cliWillQos, cliWillRetained);
@@ -211,12 +217,16 @@ abstract class Client {
                 throw new IllegalArgumentException("Will destination cannot be empty.", e);
             }
         }
+
+        // set username and password
         if (!cliUsername.isEmpty()) {
             connectOptions.setUserName(cliUsername);
             if (cliPassword != null) {
                 connectOptions.setPassword(cliPassword.toCharArray());
             }
         }
+
+        // set keep-alive interval
          if (cliKeepAlive != null) {
             try {
                 connectOptions.setKeepAliveInterval(cliKeepAlive);
@@ -224,6 +234,8 @@ abstract class Client {
                 throw new IllegalArgumentException("Keep alive interval cannot be a negative number.", e);
             }
         }
+
+         // set reconnect and clean session
         connectOptions.setAutomaticReconnect(cliReconnect);
         connectOptions.setCleanSession(true);
 
@@ -242,6 +254,9 @@ abstract class Client {
         }
     }
 
+    /**
+     * Setup for logging. Default log level is "info".
+     * */
     protected Logger setUpLogger(String name) {
         Logger log = Logger.getLogger(name);
         if (cliLogLevel == null){
